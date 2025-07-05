@@ -1,103 +1,134 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState, useEffect } from "react"
+import Navigation from "@/components/navigation"
+import Dashboard from "@/components/dashboard"
+import AddBookForm from "@/components/add-book-form"
+import IncomingTransactionForm from "@/components/incoming-transaction-form"
+import OutgoingTransactionForm from "@/components/outgoing-transaction-form"
+import BookHistoryView from "@/components/book-history-view"
+
+export interface Book {
+  id: string
+  title: string
+}
+
+export interface Transaction {
+  id: string
+  bookId: string
+  type: "in" | "out"
+  quantity: number
+  date: string
+  location: string
+}
+
+export interface BookStock {
+  bookId: string
+  totalIn: number
+  totalOut: number
+  currentStock: number
+}
+
+type ViewType = "dashboard" | "add-book" | "stock-in" | "stock-out" | "book-history"
+
+export default function App() {
+  const [currentView, setCurrentView] = useState<ViewType>("dashboard")
+  const [selectedBookId, setSelectedBookId] = useState<string>("")
+
+  const [books, setBooks] = useState<Book[]>([
+    { id: "B001", title: "The Great Gatsby" },
+    { id: "B002", title: "To Kill a Mockingbird" },
+    { id: "B003", title: "1984" },
+    { id: "B004", title: "Pride and Prejudice" },
+    { id: "B005", title: "The Catcher in the Rye" },
+  ])
+
+  const [transactions, setTransactions] = useState<Transaction[]>([
+    { id: "T001", bookId: "B001", type: "in", quantity: 50, date: "2024-01-15", location: "Main Warehouse" },
+    { id: "T002", bookId: "B001", type: "out", quantity: 12, date: "2024-01-20", location: "Store A" },
+    { id: "T003", bookId: "B002", type: "in", quantity: 30, date: "2024-01-18", location: "Main Warehouse" },
+    { id: "T004", bookId: "B002", type: "out", quantity: 8, date: "2024-01-22", location: "Store B" },
+    { id: "T005", bookId: "B003", type: "in", quantity: 25, date: "2024-01-10", location: "Secondary Warehouse" },
+    { id: "T006", bookId: "B003", type: "out", quantity: 15, date: "2024-01-25", location: "Online Orders" },
+    { id: "T007", bookId: "B004", type: "in", quantity: 40, date: "2024-01-12", location: "Main Warehouse" },
+    { id: "T008", bookId: "B005", type: "in", quantity: 20, date: "2024-01-14", location: "Main Warehouse" },
+    { id: "T009", bookId: "B005", type: "out", quantity: 5, date: "2024-01-28", location: "Store C" },
+  ])
+
+  const [bookStocks, setBookStocks] = useState<BookStock[]>([])
+
+  useEffect(() => {
+    const calculateStocks = () => {
+      const stocks = books.map((book) => {
+        const bookTransactions = transactions.filter((t) => t.bookId === book.id)
+        const totalIn = bookTransactions.filter((t) => t.type === "in").reduce((sum, t) => sum + t.quantity, 0)
+        const totalOut = bookTransactions.filter((t) => t.type === "out").reduce((sum, t) => sum + t.quantity, 0)
+
+        return {
+          bookId: book.id,
+          totalIn,
+          totalOut,
+          currentStock: totalIn - totalOut,
+        }
+      })
+      setBookStocks(stocks)
+    }
+
+    calculateStocks()
+  }, [books, transactions])
+
+  const addBook = (book: Book) => {
+    setBooks((prev) => [...prev, book])
+  }
+
+  const addTransaction = (transaction: Omit<Transaction, "id">) => {
+    const newTransaction = {
+      ...transaction,
+      id: `T${String(transactions.length + 1).padStart(3, "0")}`,
+    }
+    setTransactions((prev) => [...prev, newTransaction])
+  }
+
+  const navigateTo = (view: ViewType, bookId?: string) => {
+    setCurrentView(view)
+    if (bookId) {
+      setSelectedBookId(bookId)
+    }
+  }
+
+  const goToDashboard = () => {
+    setCurrentView("dashboard")
+    setSelectedBookId("")
+  }
+
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case "dashboard":
+        return <Dashboard books={books} bookStocks={bookStocks} onNavigate={navigateTo} />
+      case "add-book":
+        return <AddBookForm onAddBook={addBook} onBack={goToDashboard} />
+      case "stock-in":
+        return <IncomingTransactionForm books={books} onAddTransaction={addTransaction} onBack={goToDashboard} />
+      case "stock-out":
+        return <OutgoingTransactionForm books={books} onAddTransaction={addTransaction} onBack={goToDashboard} />
+      case "book-history":
+        return (
+          <BookHistoryView
+            books={books}
+            transactions={transactions}
+            selectedBookId={selectedBookId}
+            onBack={goToDashboard}
+          />
+        )
+      default:
+        return <Dashboard books={books} bookStocks={bookStocks} onNavigate={navigateTo} />
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation currentView={currentView} onNavigate={navigateTo} />
+      <main className="container mx-auto px-4 py-8">{renderCurrentView()}</main>
     </div>
-  );
+  )
 }
