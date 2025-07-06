@@ -104,7 +104,7 @@ export default function App() {
   const renderCurrentView = () => {
     switch (currentView) {
       case "dashboard":
-        return <Dashboard books={books} bookStocks={bookStocks} onNavigate={navigateTo} />
+        return <Dashboard />
       case "add-book":
         return <AddBookForm onAddBook={addBook} onBack={goToDashboard} />
       case "stock-in":
@@ -121,13 +121,13 @@ export default function App() {
           />
         )
       default:
-        return <Dashboard books={books} bookStocks={bookStocks} onNavigate={navigateTo} />
+        return <Dashboard />
     }
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation currentView={currentView} onNavigate={navigateTo} />
+      {/* <Navigation currentView={currentView} onNavigate={navigateTo} /> */}
       <main className="container mx-auto px-4 py-8">{renderCurrentView()}</main>
     </div>
   )
