@@ -7,18 +7,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import type { Book, BookStock } from "@/app/page"
 
+import { getBooksWithTransactions} from '@/services/books.service'
+
 type ViewType = "dashboard" | "add-book" | "stock-in" | "stock-out" | "book-history"
 
-interface DashboardProps {
-  books: Book[]
-  bookStocks: BookStock[]
-  onNavigate: (view: ViewType, bookId?: string) => void
-}
+// interface DashboardProps {
+//   books: Book[]
+//   bookStocks: BookStock[]
+//   onNavigate: (view: ViewType, bookId?: string) => void
+// }
 
-export default function Dashboard({ books, bookStocks, onNavigate }: DashboardProps) {
+export default async function Dashboard() {
+  const books = await getBooksWithTransactions()
   const totalBooks = books.length
-  const totalStock = bookStocks.reduce((sum, stock) => sum + stock.currentStock, 0)
-  const lowStockBooks = bookStocks.filter((stock) => stock.currentStock < 10).length
+  // const totalStock = bookStocks.reduce((sum, stock) => sum + stock.currentStock, 0)
+  // const lowStockBooks = bookStocks.filter((stock) => stock.currentStock < 10).length
+
 
   return (
     <div className="space-y-6">
@@ -27,10 +31,10 @@ export default function Dashboard({ books, bookStocks, onNavigate }: DashboardPr
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">Book inventory overview</p>
         </div>
-        <Button onClick={() => onNavigate("add-book")} className="flex items-center space-x-2">
+        {/* <Button onClick={() => onNavigate("add-book")} className="flex items-center space-x-2">
           <Plus className="h-4 w-4" />
           <span>Add New Book</span>
-        </Button>
+        </Button> */}
       </div>
 
       {/* Stats Cards */}
@@ -52,7 +56,8 @@ export default function Dashboard({ books, bookStocks, onNavigate }: DashboardPr
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalStock}</div>
+            {/* <div className="text-2xl font-bold">{totalStock}</div> */}
+            <div className="text-2xl font-bold">2</div>
             <p className="text-xs text-muted-foreground">Books in inventory</p>
           </CardContent>
         </Card>
@@ -63,7 +68,8 @@ export default function Dashboard({ books, bookStocks, onNavigate }: DashboardPr
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{lowStockBooks}</div>
+            <div className="text-2xl font-bold text-red-600">0</div>
+            {/* <div className="text-2xl font-bold text-red-600">{lowStockBooks}</div> */}
             <p className="text-xs text-muted-foreground">Books below 10 units</p>
           </CardContent>
         </Card>
@@ -89,24 +95,19 @@ export default function Dashboard({ books, bookStocks, onNavigate }: DashboardPr
               </TableHeader>
               <TableBody>
                 {books.map((book) => {
-                  const stock = bookStocks.find((s) => s.bookId === book.id) || {
-                    totalIn: 0,
-                    totalOut: 0,
-                    currentStock: 0,
-                  }
 
                   return (
-                    <TableRow key={book.id}>
-                      <TableCell className="font-medium">{book.id}</TableCell>
-                      <TableCell>{book.title}</TableCell>
-                      <TableCell className="text-center">{stock.totalIn}</TableCell>
-                      <TableCell className="text-center">{stock.totalOut}</TableCell>
+                    <TableRow key={book.book_id}>
+                      <TableCell className="font-medium">{book.ISBN}</TableCell>
+                      <TableCell>{book.nama}</TableCell>
+                      <TableCell className="text-center">{book.totalIn}</TableCell>
+                      <TableCell className="text-center">{book.totalOut}</TableCell>
                       <TableCell className="text-center">
                         <Badge
-                          variant={stock.currentStock < 10 ? "destructive" : "default"}
-                          className={stock.currentStock < 10 ? "" : "bg-green-100 text-green-800 hover:bg-green-200"}
+                          variant={book.currentStock < 10 ? "destructive" : "default"}
+                          className={book.currentStock < 10 ? "" : "bg-green-100 text-green-800 hover:bg-green-200"}
                         >
-                          {stock.currentStock}
+                          {book.currentStock}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
@@ -114,7 +115,7 @@ export default function Dashboard({ books, bookStocks, onNavigate }: DashboardPr
                           variant="outline"
                           size="sm"
                           className="flex items-center space-x-1 bg-transparent"
-                          onClick={() => onNavigate("book-history", book.id)}
+                          // onClick={() => onNavigate("book-history", book.id)}
                         >
                           <History className="h-3 w-3" />
                           <span className="hidden sm:inline">View History</span>
