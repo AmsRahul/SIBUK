@@ -7,16 +7,16 @@ async function main() {
   const book1 = await prisma.book.create({
     data: {
       nama: 'Pemrograman JavaScript',
-      ISBN: '978-1234567890',
-      Harga: 75000,
+      isbn: '978-1234567890',
+      harga: 75000,
     },
   })
 
   const book2 = await prisma.book.create({
     data: {
       nama: 'Database dengan PostgreSQL',
-      ISBN: '978-0987654321',
-      Harga: 85000,
+      isbn: '978-0987654321',
+      harga: 85000,
     },
   })
 
@@ -25,14 +25,14 @@ async function main() {
     data: [
       {
         book_id: book1.book_id,
-        type: 'IN',
+        type: 'In',
         quantity: 10,
         date: new Date(),
         location: 'Gudang A',
       },
       {
         book_id: book2.book_id,
-        type: 'OUT',
+        type: 'Out',
         quantity: 2,
         date: new Date(),
         location: 'Toko B',
