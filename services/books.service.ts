@@ -1,6 +1,6 @@
 import prisma from '@/lib/db'
 
-export const createBook = async (data: { nama: string; ISBN: string; Harga: number }) => {
+export const createBook = async (data: { nama: string; isbn: string; harga: number; penerbit: string; penulis: string }) => {
   return await prisma.book.create({ data })
 }
 
@@ -19,11 +19,11 @@ export const getBooksWithTransactions = async () => {
   })
     const booksWithStock = books.map((book) => {
     const totalIn = book.transactions
-      .filter((tx) => tx.type === 'IN')
+      .filter((tx) => tx.type === 'In')
       .reduce((sum, tx) => sum + tx.quantity, 0)
 
     const totalOut = book.transactions
-      .filter((tx) => tx.type === 'OUT')
+      .filter((tx) => tx.type === 'Out')
       .reduce((sum, tx) => sum + tx.quantity, 0)
 
     const currentStock = totalIn - totalOut
