@@ -8,8 +8,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { nama, ISBN, Harga } = body
+  const { nama, isbn, harga, penerbit, penulis } = body
 
-  const created = await createBook({ nama, ISBN, Harga })
+  const created = await createBook({ nama, isbn, harga, penerbit, penulis })
   return NextResponse.json(created, { status: 201 })
 }

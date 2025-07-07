@@ -23,7 +23,6 @@ export async function PUT(
 ) {
   const body = await req.json()
   const { id } = await context.params
-  const updated = await updateBook(id, body)
 
  try {
     const updated = await updateBook(id, body)
@@ -50,7 +49,6 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> } // 🔁 gunakan Promise agar bisa di-await
 ) {
   const { id } = await context.params
-
   try {
     await deleteBook(id)
     return NextResponse.json({ message: 'Book deleted' })
