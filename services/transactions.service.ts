@@ -8,3 +8,15 @@ export const getTransactions = async () => {
     },
   })
 }
+
+export async function createTransaction(data: {
+  book_id: string
+  type: string
+  quantity: number
+  date: Date
+  location: string
+}) {
+  return await prisma.transaction.create({
+    data,
+  })
+}
