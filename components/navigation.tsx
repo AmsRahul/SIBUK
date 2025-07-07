@@ -1,15 +1,16 @@
 "use client"
 
-import { Book, Package, ArrowDown, ArrowUp, Home } from "lucide-react"
+import { Book, Package, ArrowDown, ArrowUp, Home, } from "lucide-react"
+import Link from "next/link"
 
 type ViewType = "dashboard" | "add-book" | "stock-in" | "stock-out" | "book-history"
 
-interface NavigationProps {
-  currentView: ViewType
-  onNavigate: (view: ViewType) => void
-}
+// interface NavigationProps {
+//   currentView: ViewType
+//   onNavigate: (view: ViewType) => void
+// }
 
-export default function Navigation({ currentView, onNavigate }: NavigationProps) {
+export default function Navigation() {
   const navItems = [
     { view: "dashboard" as ViewType, label: "Dashboard", icon: Home },
     { view: "add-book" as ViewType, label: "Add Book", icon: Book },
@@ -30,18 +31,31 @@ export default function Navigation({ currentView, onNavigate }: NavigationProps)
             {navItems.map((item) => {
               const Icon = item.icon
               return (
-                <button
+                // <button
+                //   key={item.view}
+                //   // onClick={() => onNavigate(item.view)}
+                //   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
+                //   // currentView === item.view
+                    
+                //       // ? "text-blue-600 bg-blue-50"
+                //       // : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                //   `}
+                // >
+                //   <Icon className="h-4 w-4" />
+                //   <span>{item.label}</span>
+                // </button>
+                <Link
                   key={item.view}
-                  onClick={() => onNavigate(item.view)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === item.view
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                  href={`/${item.view}`}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
+                  // currentView === item.view
+                  //   ? "text-blue-600 bg-blue-50"
+                  //   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  `}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
-                </button>
+                </Link>
               )
             })}
           </div>
@@ -49,8 +63,8 @@ export default function Navigation({ currentView, onNavigate }: NavigationProps)
           <div className="md:hidden">
             <select
               className="border rounded-md px-3 py-2 text-sm"
-              value={currentView}
-              onChange={(e) => onNavigate(e.target.value as ViewType)}
+              // value={currentView}
+              // onChange={(e) => onNavigate(e.target.value as ViewType)}
             >
               {navItems.map((item) => (
                 <option key={item.view} value={item.view}>

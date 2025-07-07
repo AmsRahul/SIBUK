@@ -15,18 +15,23 @@ datasource db {
 }
 
 model Book {
-  book_id String @id @default(uuid()) // UUID otomatis
+  book_id String @id @default(uuid()) 
   nama    String
-  ISBN    String
-  Harga   Int
+  isbn    String
+  harga   Int
   transactions Transaction[]
+}
+
+enum TransactionType {
+  In
+  Out
 }
 
 model Transaction {
   id        String   @id @default(uuid())
   book      Book     @relation(fields: [book_id], references: [book_id])
   book_id   String
-  type      String   // "in" atau "out"
+  type      TransactionType
   quantity  Int
   date      DateTime
   location  String
