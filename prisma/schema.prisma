@@ -19,6 +19,8 @@ model Book {
   nama    String
   isbn    String
   harga   Int
+  penerbit String
+  penulis String
   transactions Transaction[]
 }
 
