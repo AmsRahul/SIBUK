@@ -42,7 +42,7 @@ export const getBookById = async (id: string) => {
   return await prisma.book.findUnique({ where: { book_id: id } })
 }
 
-export const updateBook = async (id: string, data: Partial<{ nama: string; ISBN: string; Harga: number }>) => {
+export const updateBook = async (id: string, data: Partial<{ nama: string; isbn: string; harga: number, penerbit: string; penulis: string }>) => {
   return await prisma.book.update({ where: { book_id: id }, data })
 }
 
