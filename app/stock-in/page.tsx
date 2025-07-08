@@ -1,60 +1,81 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useEffect, useState } from "react";
+import { ArrowLeft, Save, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { useState } from "react"
-import { ArrowLeft, Save, ArrowDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Book, Transaction } from "@/app/page"
+type Book = {
+  book_id: string;
+  nama: string;
+  isbn: string;
+};
 
-interface IncomingTransactionFormProps {
-  books: Book[]
-  onAddTransaction: (transaction: Omit<Transaction, "id">) => void
-  onBack: () => void
-}
-
-export default function IncomingTransactionForm({ books, onAddTransaction, onBack }: IncomingTransactionFormProps) {
+export default function StockInPage() {
+    // getBooks;
+const [books, setBooks] = useState<Book[]>([]);
+    
   const [formData, setFormData] = useState({
-    bookId: "",
+    book_id: "",
     quantity: "",
     date: new Date().toISOString().split("T")[0],
     location: "",
-  })
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (formData.bookId && formData.quantity && formData.date && formData.location) {
-      onAddTransaction({
-        bookId: formData.bookId,
-        type: "in",
-        quantity: Number.parseInt(formData.quantity),
-        date: formData.date,
-        location: formData.location,
-      })
-      onBack()
-    }
-  }
+  useEffect(() => {
+    fetch("/api/books")
+      .then((res) => res.json())
+      .then(setBooks);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }))
-  }
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (
+      formData.book_id &&
+      formData.quantity &&
+      formData.date &&
+      formData.location
+    ) {
+      await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          quantity: parseInt(formData.quantity),
+          type: "In",
+        }),
+      });
+      window.location.href = "/dashboard";
+    }
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       <div className="flex items-center space-x-4">
-        <Button variant="outline" onClick={onBack}>
+        <Button variant="outline" onClick={() => window.history.back()}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Stock In Transaction</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Stock In Transaction
+          </h1>
           <p className="text-gray-600">Record incoming book inventory</p>
         </div>
       </div>
@@ -69,18 +90,20 @@ export default function IncomingTransactionForm({ books, onAddTransaction, onBac
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="bookId">Select Book</Label>
+              <Label htmlFor="book_id">Select Book</Label>
               <Select
-                value={formData.bookId}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, bookId: value }))}
+                value={formData.book_id}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, book_id: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a book" />
                 </SelectTrigger>
                 <SelectContent>
                   {books.map((book) => (
-                    <SelectItem key={book.id} value={book.id}>
-                      {book.id} - {book.title}
+                    <SelectItem key={book.book_id} value={book.book_id}>
+                      {book.nama} ({book.isbn})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -94,7 +117,6 @@ export default function IncomingTransactionForm({ books, onAddTransaction, onBac
                 name="quantity"
                 type="number"
                 min="1"
-                placeholder="e.g., 25"
                 value={formData.quantity}
                 onChange={handleChange}
                 required
@@ -103,7 +125,14 @@ export default function IncomingTransactionForm({ books, onAddTransaction, onBac
 
             <div className="space-y-2">
               <Label htmlFor="date">Date</Label>
-              <Input id="date" name="date" type="date" value={formData.date} onChange={handleChange} required />
+              <Input
+                id="date"
+                name="date"
+                type="date"
+                value={formData.date}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="space-y-2">
@@ -112,7 +141,6 @@ export default function IncomingTransactionForm({ books, onAddTransaction, onBac
                 id="location"
                 name="location"
                 type="text"
-                placeholder="e.g., Main Warehouse"
                 value={formData.location}
                 onChange={handleChange}
                 required
@@ -127,5 +155,5 @@ export default function IncomingTransactionForm({ books, onAddTransaction, onBac
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

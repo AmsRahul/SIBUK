@@ -1,134 +1,135 @@
-"use client"
+import { History, TrendingUp, TrendingDown, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { getBooksWithTransactions } from "@/services/books.service";
 
-import { useState, useEffect } from "react"
-import Navigation from "@/components/navigation"
-import Dashboard from "@/components/dashboard"
-import AddBookForm from "@/components/add-book-form"
-import IncomingTransactionForm from "@/components/incoming-transaction-form"
-import OutgoingTransactionForm from "@/components/outgoing-transaction-form"
-import BookHistoryView from "@/components/book-history-view"
-
-export interface Book {
-  id: string
-  title: string
-}
-
-export interface Transaction {
-  id: string
-  bookId: string
-  type: "in" | "out"
-  quantity: number
-  date: string
-  location: string
-}
-
-export interface BookStock {
-  bookId: string
-  totalIn: number
-  totalOut: number
-  currentStock: number
-}
-
-type ViewType = "dashboard" | "add-book" | "stock-in" | "stock-out" | "book-history"
-
-export default function App() {
-  const [currentView, setCurrentView] = useState<ViewType>("dashboard")
-  const [selectedBookId, setSelectedBookId] = useState<string>("")
-
-  const [books, setBooks] = useState<Book[]>([
-    { id: "B001", title: "The Great Gatsby" },
-    { id: "B002", title: "To Kill a Mockingbird" },
-    { id: "B003", title: "1984" },
-    { id: "B004", title: "Pride and Prejudice" },
-    { id: "B005", title: "The Catcher in the Rye" },
-  ])
-
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: "T001", bookId: "B001", type: "in", quantity: 50, date: "2024-01-15", location: "Main Warehouse" },
-    { id: "T002", bookId: "B001", type: "out", quantity: 12, date: "2024-01-20", location: "Store A" },
-    { id: "T003", bookId: "B002", type: "in", quantity: 30, date: "2024-01-18", location: "Main Warehouse" },
-    { id: "T004", bookId: "B002", type: "out", quantity: 8, date: "2024-01-22", location: "Store B" },
-    { id: "T005", bookId: "B003", type: "in", quantity: 25, date: "2024-01-10", location: "Secondary Warehouse" },
-    { id: "T006", bookId: "B003", type: "out", quantity: 15, date: "2024-01-25", location: "Online Orders" },
-    { id: "T007", bookId: "B004", type: "in", quantity: 40, date: "2024-01-12", location: "Main Warehouse" },
-    { id: "T008", bookId: "B005", type: "in", quantity: 20, date: "2024-01-14", location: "Main Warehouse" },
-    { id: "T009", bookId: "B005", type: "out", quantity: 5, date: "2024-01-28", location: "Store C" },
-  ])
-
-  const [bookStocks, setBookStocks] = useState<BookStock[]>([])
-
-  useEffect(() => {
-    const calculateStocks = () => {
-      const stocks = books.map((book) => {
-        const bookTransactions = transactions.filter((t) => t.bookId === book.id)
-        const totalIn = bookTransactions.filter((t) => t.type === "in").reduce((sum, t) => sum + t.quantity, 0)
-        const totalOut = bookTransactions.filter((t) => t.type === "out").reduce((sum, t) => sum + t.quantity, 0)
-
-        return {
-          bookId: book.id,
-          totalIn,
-          totalOut,
-          currentStock: totalIn - totalOut,
-        }
-      })
-      setBookStocks(stocks)
-    }
-
-    calculateStocks()
-  }, [books, transactions])
-
-  const addBook = (book: Book) => {
-    setBooks((prev) => [...prev, book])
-  }
-
-  const addTransaction = (transaction: Omit<Transaction, "id">) => {
-    const newTransaction = {
-      ...transaction,
-      id: `T${String(transactions.length + 1).padStart(3, "0")}`,
-    }
-    setTransactions((prev) => [...prev, newTransaction])
-  }
-
-  const navigateTo = (view: ViewType, bookId?: string) => {
-    setCurrentView(view)
-    if (bookId) {
-      setSelectedBookId(bookId)
-    }
-  }
-
-  const goToDashboard = () => {
-    setCurrentView("dashboard")
-    setSelectedBookId("")
-  }
-
-  const renderCurrentView = () => {
-    switch (currentView) {
-      case "dashboard":
-        return <Dashboard />
-      case "add-book":
-        return <AddBookForm onAddBook={addBook} onBack={goToDashboard} />
-      case "stock-in":
-        return <IncomingTransactionForm books={books} onAddTransaction={addTransaction} onBack={goToDashboard} />
-      case "stock-out":
-        return <OutgoingTransactionForm books={books} onAddTransaction={addTransaction} onBack={goToDashboard} />
-      case "book-history":
-        return (
-          <BookHistoryView
-            books={books}
-            transactions={transactions}
-            selectedBookId={selectedBookId}
-            onBack={goToDashboard}
-          />
-        )
-      default:
-        return <Dashboard />
-    }
-  }
+export default async function Dashboard() {
+  const books = await getBooksWithTransactions();
+  const totalBooks = books.length;
+  const totalStock = books.reduce((sum, b) => sum + b.currentStock, 0);
+  const lowStockBooks = books.filter((b) => b.currentStock < 10).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* <Navigation currentView={currentView} onNavigate={navigateTo} /> */}
-      <main className="container mx-auto px-4 py-8">{renderCurrentView()}</main>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">Book inventory overview</p>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Books</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalBooks}</div>
+            <p className="text-xs text-muted-foreground">Different titles</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Stock</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalStock}</div>
+            <p className="text-xs text-muted-foreground">Books in inventory</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Low Stock Alert
+            </CardTitle>
+            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {lowStockBooks}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Books below 10 units
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Books Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Book Stock Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ISBN</TableHead>
+                  <TableHead>Book Title</TableHead>
+                  <TableHead className="text-center">Total In</TableHead>
+                  <TableHead className="text-center">Total Out</TableHead>
+                  <TableHead className="text-center">Current Stock</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {books.map((book) => (
+                  <TableRow key={book.book_id}>
+                    <TableCell className="font-medium">{book.isbn}</TableCell>
+                    <TableCell>{book.nama}</TableCell>
+                    <TableCell className="text-center">
+                      {book.totalIn}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {book.totalOut}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        variant={
+                          book.currentStock < 10 ? "destructive" : "default"
+                        }
+                        className={
+                          book.currentStock < 10
+                            ? ""
+                            : "bg-green-100 text-green-800 hover:bg-green-200"
+                        }
+                      >
+                        {book.currentStock}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center space-x-1 bg-transparent"
+                        // onClick={() => navigate("book-history", book.book_id)} // jika pakai client component
+                      >
+                        <History className="h-3 w-3" />
+                        <span className="hidden sm:inline">View History</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }
