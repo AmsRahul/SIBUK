@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 
 export default function AddBookForm() {
 const router = useRouter();
@@ -29,7 +31,7 @@ const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await fetch("/api/books", {
+    const response = await fetch("/api/books", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -37,7 +39,17 @@ const router = useRouter();
         harga: parseInt(formData.harga),
       }),
     });
+
+    if (response.ok) {
+      router.push("/dashboard"); // ✅ redirect after successful submit
+      toast.success("Book added!");
+
+    } else {
+      console.error("Failed to add book");
+      // Optional: show error notification
+    }
   };
+  
 
   return (
     <div className="space-y-6 p-4">

@@ -14,6 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
 type Book = {
   book_id: string;
   nama: string;
@@ -21,6 +24,8 @@ type Book = {
 };
 
 export default function StockOutPage() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [books, setBooks] = useState<Book[]>([]);
   const [formData, setFormData] = useState({
     book_id: "",
@@ -44,24 +49,40 @@ export default function StockOutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (
       formData.book_id &&
       formData.quantity &&
       formData.date &&
       formData.location
     ) {
-      await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          quantity: parseInt(formData.quantity),
-          type: "Out",
-        }),
-      });
+      setIsSubmitting(true);
 
-      // kembali ke dashboard
-      window.location.href = "/dashboard";
+      try {
+        const response = await fetch("/api/transaction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            quantity: parseInt(formData.quantity),
+            type: "Out",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit transaction");
+        }
+
+        toast.success("Transaction (Out) submitted successfully!");
+        router.push("/dashboard"); // ✅ redirect lebih baik daripada window.location.href
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to submit transaction. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      toast.warning("Please fill in all required fields.");
     }
   };
 
@@ -149,10 +170,39 @@ export default function StockOutPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
-              <Save className="h-4 w-4 mr-2" />
-              Record Transaction
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    ></path>
+                  </svg>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Record Transaction
+                </>
+              )}
             </Button>
+
           </form>
         </CardContent>
       </Card>
