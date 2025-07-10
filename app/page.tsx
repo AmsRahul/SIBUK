@@ -1,6 +1,7 @@
 import { History, TrendingUp, TrendingDown, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+
 import {
   Table,
   TableBody,
@@ -113,15 +114,13 @@ export default async function Dashboard() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center space-x-1 bg-transparent"
-                        // onClick={() => navigate("book-history", book.book_id)} // jika pakai client component
+                      <Link
+                        href={`/books/${book.book_id}/transactions`}
+                        className="inline-flex items-center space-x-1 text-sm px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 transition"
                       >
                         <History className="h-3 w-3" />
                         <span className="hidden sm:inline">View History</span>
-                      </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}

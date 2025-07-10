@@ -1,12 +1,19 @@
 import prisma from '@/lib/db'
 
-export const getTransactions = async () => {
+// export const getTransactions = async () => {
+//   return await prisma.transaction.findMany({
+//     orderBy: { date: 'desc' },
+//     include: {
+//       book: true, 
+//     },
+//   })
+// }
+
+export async function getTransactions(book_id?: string) {
   return await prisma.transaction.findMany({
-    orderBy: { date: 'desc' },
-    include: {
-      book: true, // untuk mengambil info buku terkait
-    },
-  })
+    where: book_id ? { book_id } : undefined,
+    orderBy: { date: "desc" },
+  });
 }
 
 export async function createTransaction(data: {

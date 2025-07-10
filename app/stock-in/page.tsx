@@ -63,7 +63,6 @@ export default function StockInPage() {
       setIsSubmitting(true);
 
       try {
-        
         const res = await fetch("/api/transaction", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
