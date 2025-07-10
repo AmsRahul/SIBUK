@@ -21,8 +21,9 @@ type Props = {
 
 export default async function BookTransactionsPage({ params }: Props) {
   const { book_id } = await params;
-
+  
   const bookId = book_id;
+
   const transactions = await getTransactions(bookId);
   const book = await getBookById(bookId);
 
