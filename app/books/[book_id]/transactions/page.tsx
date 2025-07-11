@@ -21,10 +21,10 @@ export default async function BookTransactionsPage({
 }: {
   params: { book_id: string };
 }) {
-  // const { params } = await props;
+  const { book_id } = await params;
   console.log("params:", params);
 
-  const bookId = params.book_id;
+  const bookId = book_id;
 
   const transactions = await getTransactions(bookId);
   const book = await getBookById(bookId);
