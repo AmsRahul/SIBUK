@@ -19,10 +19,10 @@ import Link from "next/link";
 export default async function BookTransactionsPage({
   params,
 }: {
-  params: { book_id: string };
+  params: Promise<{ book_id: string }>;
 }) {
   const { book_id } = await params;
-  console.log("params:", params);
+  // console.log("params:", params);
 
   const bookId = book_id;
 
