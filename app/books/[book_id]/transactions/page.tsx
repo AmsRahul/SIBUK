@@ -15,14 +15,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-type Props = {
-  params: { book_id: string };
-};
 
-export default async function BookTransactionsPage({ params }: Props) {
+export default async function BookTransactionsPage({
+  params,
+}: {
+  params: { book_id: string };
+}) {
   const { book_id } = await params;
+  console.log("params:", params);
 
   const bookId = book_id;
+
   const transactions = await getTransactions(bookId);
   const book = await getBookById(bookId);
 
